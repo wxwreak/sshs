@@ -1,10 +1,6 @@
 # SSH Audits [sshs]
 
----
-
 A Lightweight command-line tool written in Rust to audit local SSH keys and files for security weaknesses, weak cryptography, insecure file permissions, and unencrypted private keys.
-
----
 
 ## Preview
 ![Preview](https://github.com/wxwreak/sshs/blob/main/preview_sshs.png)
