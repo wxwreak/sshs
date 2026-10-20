@@ -21,42 +21,35 @@ fn main() {
             println!("{} Scanning directory: {:?}", "[*]".cyan(), ssh_dir);
 
             if let Ok(entries) = fs::read_dir(&ssh_dir) {
-                for entry in entries {
-                    if let Ok(entry) = entry {
-                        let path = entry.path();
+                for entry in entries.flatten() {
+                    let path = entry.path();
 
-                        if !path.is_file() {
-                            continue;
+                    if !path.is_file() {
+                        continue;
+                    }
+                    let filename = path.file_name().unwrap_or_default().to_string_lossy();
+
+                    if filename == "known_hosts"
+                        || filename == "known_hosts.old"
+                        || filename == "config"
+                    {
+                        continue;
+                    }
+
+                    println!("\n{} Analyzing: {}", "[*]".cyan(), filename.bold());
+
+                    if filename.ends_with(".pub") || filename == "authorized_keys" {
+                        if let Err(e) = utils::audit_public_key(&path) {
+                            eprintln!("{} Error auditing public key: {}", "[!!]".red(), e);
                         }
-                        let filename = path.file_name().unwrap_or_default().to_string_lossy();
-
-                        if filename == "known_hosts"
-                            || filename == "known_hosts.old"
-                            || filename == "config"
-                        {
-                            continue;
-                        }
-
-                        println!("\n{} Analyzing: {}", "[*]".cyan(), filename.bold());
-
-                        // Rozdělení: Veřejné klíče vs Privátní klíče (nebo authorized_keys)
-                        if filename.ends_with(".pub") || filename == "authorized_keys" {
-                            if let Err(e) = utils::audit_public_key(&path) {
-                                eprintln!("{} Error auditing public key: {}", "[!!]".red(), e);
-                            }
-                        } else {
-                            if let Ok(content) = fs::read_to_string(&path) {
-                                if content.contains("-----BEGIN") {
-                                    if let Err(e) = utils::audit_private_key(&path) {
-                                        eprintln!(
-                                            "{} Error auditing private key: {}",
-                                            "[!!]".red(),
-                                            e
-                                        );
-                                    }
-                                } else {
-                                    println!("{} Skipping non-key file", "[-]".dimmed());
+                    } else {
+                        if let Ok(content) = fs::read_to_string(&path) {
+                            if content.contains("-----BEGIN") {
+                                if let Err(e) = utils::audit_private_key(&path) {
+                                    eprintln!("{} Error auditing private key: {}", "[!!]".red(), e);
                                 }
+                            } else {
+                                println!("{} Skipping non-key file", "[-]".dimmed());
                             }
                         }
                     }
