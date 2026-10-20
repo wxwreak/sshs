@@ -1,6 +1,6 @@
+use colored::*;
 use std::fs;
 use std::path::Path;
-use colored::*;
 mod utils;
 
 fn main() {
@@ -13,22 +13,27 @@ fn main() {
                                                    
     "#;
     println!("{}", ascii_art);
-    
+
     if let Some(home_dir) = std::env::var_os("HOME") {
         let ssh_dir = Path::new(&home_dir).join(".ssh");
 
         if ssh_dir.is_dir() {
             println!("{} Scanning directory: {:?}", "[*]".cyan(), ssh_dir);
-            
+
             if let Ok(entries) = fs::read_dir(&ssh_dir) {
                 for entry in entries {
                     if let Ok(entry) = entry {
                         let path = entry.path();
-                        
-                        if !path.is_file() { continue; }
+
+                        if !path.is_file() {
+                            continue;
+                        }
                         let filename = path.file_name().unwrap_or_default().to_string_lossy();
 
-                        if filename == "known_hosts" || filename == "known_hosts.old" || filename == "config" {
+                        if filename == "known_hosts"
+                            || filename == "known_hosts.old"
+                            || filename == "config"
+                        {
                             continue;
                         }
 
@@ -43,7 +48,11 @@ fn main() {
                             if let Ok(content) = fs::read_to_string(&path) {
                                 if content.contains("-----BEGIN") {
                                     if let Err(e) = utils::audit_private_key(&path) {
-                                        eprintln!("{} Error auditing private key: {}", "[!!]".red(), e);
+                                        eprintln!(
+                                            "{} Error auditing private key: {}",
+                                            "[!!]".red(),
+                                            e
+                                        );
                                     }
                                 } else {
                                     println!("{} Skipping non-key file", "[-]".dimmed());
