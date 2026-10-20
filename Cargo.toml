@@ -1,0 +1,12 @@
+[package]
+name = "ssh_audits"
+version = "0.1.0"
+edition = "2024"
+authors = ["wxwreak"]
+description = "A Lightweight command-line tool written in Rust to audit local SSH keys and files for security weaknesses, weak cryptography, insecure file permissions, and unencrypted private keys."
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+colored = "3.1.1"
+ssh-key = { version = "0.7.0-rc.11", features = ["alloc", "std"] }
